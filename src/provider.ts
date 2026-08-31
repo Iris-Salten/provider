@@ -7,8 +7,26 @@ const DEFAULT_ID = "irissalten";
 const DEFAULT_VERSION = "v1";
 const DEFAULT_ISSUER = "https://accounts.iris-salten.no";
 
-function trustRequestHost() {
+let hostMismatchWarned = false;
+
+function trustRequestHost(callback?: string) {
     process.env.AUTH_TRUST_HOST ??= "true";
+
+    const fixedUrl = process.env.NEXTAUTH_URL;
+
+    if (hostMismatchWarned || !fixedUrl || !callback) {
+        return;
+    }
+
+    // NextAuth reads NEXTAUTH_URL before it looks at AUTH_TRUST_HOST, so a fixed
+    // value silently overrides the per-request host on every redirect it builds.
+    if (!callback.startsWith(`${stripTrailingSlash(fixedUrl)}/`)) {
+        hostMismatchWarned = true;
+
+        console.warn(
+            `[iris-salten] NEXTAUTH_URL is set to "${fixedUrl}" but this request resolved to "${callback}". NextAuth will redirect back to NEXTAUTH_URL. Unset NEXTAUTH_URL and keep AUTH_TRUST_HOST=true to support multiple hosts.`,
+        );
+    }
 }
 
 export default function IrisSaltenProvider(options: IrisSaltenProviderOptions) {
@@ -25,13 +43,13 @@ export default function IrisSaltenProvider(options: IrisSaltenProviderOptions) {
         throw new Error('IrisSaltenProvider requires a "name" option.');
     }
 
-    trustRequestHost();
-
     const callback = resolveCallbackUrl({
         callback: options.callback,
         origin: options.origin,
         providerId: id,
     });
+
+    trustRequestHost(callback);
 
     return {
         id,
