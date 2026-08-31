@@ -1,0 +1,40 @@
+{
+    "name": "@iris-salten/provider",
+    "version": "1.0.0",
+    "description": "NextAuth provider for Iris Salten accounts",
+    "homepage": "https://github.com/Iris-Salten/provider#readme",
+    "bugs": {
+        "url": "https://github.com/Iris-Salten/provider/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Iris-Salten/provider.git"
+    },
+    "author": "Mathias Voie",
+    "license": "UNLICENSED",
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "require": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "prepublishOnly": "npm run build"
+    },
+    "peerDependencies": {
+        "next-auth": "^4.24.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "next-auth": "^4.24.14",
+        "typescript": "^5"
+    }
+}
