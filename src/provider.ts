@@ -1,7 +1,11 @@
 import type { OAuthConfig } from "next-auth/providers/oauth";
 import { decodeJwt } from "./decode-jwt";
 import { resolveCallbackUrl, stripTrailingSlash } from "./origin";
-import type { IrisSaltenProfile, IrisSaltenProviderOptions } from "./types";
+import type {
+    IrisSaltenProfile,
+    IrisSaltenProviderOptions,
+    IrisSaltenUser,
+} from "./types";
 
 const DEFAULT_ID = "irissalten";
 const DEFAULT_VERSION = "v1";
@@ -37,6 +41,7 @@ export default function IrisSaltenProvider(options: IrisSaltenProviderOptions) {
         label = "Iris Salten",
         issuer = DEFAULT_ISSUER,
         clientSecret = process.env.NEXTAUTH_SECRET ?? "unused",
+        authorize,
     } = options;
 
     if (!name) {
@@ -91,14 +96,18 @@ export default function IrisSaltenProvider(options: IrisSaltenProviderOptions) {
                 return decodeJwt<IrisSaltenProfile>(tokens.access_token);
             },
         },
-        profile(profile: IrisSaltenProfile) {
-            return {
+        async profile(profile: IrisSaltenProfile) {
+            const user: IrisSaltenUser = {
                 id: profile.id,
                 firstName: profile.firstName,
                 lastName: profile.lastName,
                 email: profile.email,
                 name: `${profile.firstName} ${profile.lastName}`.trim(),
             };
+
+            await authorize?.(user);
+
+            return user;
         },
     } satisfies OAuthConfig<IrisSaltenProfile>;
 }

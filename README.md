@@ -53,6 +53,31 @@ Register this callback URL with Iris Salten accounts:
 | `callback` | no | `{origin}/api/auth/callback/{id}` | Full callback URL |
 | `issuer` | no | `https://accounts.iris-salten.no` | Accounts host |
 | `clientSecret` | no | `NEXTAUTH_SECRET` | Unused by Iris Salten, required by NextAuth |
+| `authorize` | no | | Runs with the user before NextAuth handles the sign-in (see [Local accounts](#local-accounts)) |
+
+### Local accounts
+
+`authorize` runs as soon as the accounts token is decoded, before NextAuth continues with its own callbacks and session. Use it to create or update the local account:
+
+```ts
+IrisSaltenProvider({
+    name: "Avfallsportalen",
+    authorize: async (user) => {
+        await db.user.upsert({
+            where: { id: user.id },
+            create: {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+            },
+            update: { email: user.email },
+        });
+    },
+});
+```
+
+Throwing aborts the sign-in and NextAuth redirects to the error page.
 
 ### Subdomains
 

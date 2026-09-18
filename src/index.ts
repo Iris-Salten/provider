@@ -3,4 +3,5 @@ export type {
     IrisSaltenApiVersion,
     IrisSaltenProfile,
     IrisSaltenProviderOptions,
+    IrisSaltenUser,
 } from "./types";

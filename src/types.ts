@@ -7,6 +7,13 @@ export interface IrisSaltenProfile {
     email: string;
 }
 
+export interface IrisSaltenUser extends IrisSaltenProfile {
+    /**
+     * `firstName` and `lastName` joined, as NextAuth expects on `user.name`.
+     */
+    name: string;
+}
+
 export interface IrisSaltenProviderOptions {
     /**
      * Client name registered with Iris Salten accounts.
@@ -48,4 +55,11 @@ export interface IrisSaltenProviderOptions {
      * Falls back to `NEXTAUTH_SECRET`.
      */
     clientSecret?: string;
+    /**
+     * Runs with the user from the accounts token before NextAuth starts its own
+     * sign-in handling, so you can create or update the local account first.
+     *
+     * Throw to abort the sign-in.
+     */
+    authorize?: (user: IrisSaltenUser) => void | Promise<void>;
 }
