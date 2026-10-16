@@ -77,7 +77,7 @@ IrisSaltenProvider({
 });
 ```
 
-Throwing aborts the sign-in and NextAuth redirects to the error page.
+Throwing aborts the sign-in. NextAuth logs `OAUTH_CALLBACK_ERROR` with your error and redirects to `/api/auth/signin?error=OAuthCallback`.
 
 ### Subdomains
 

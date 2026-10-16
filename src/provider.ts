@@ -33,6 +33,16 @@ function trustRequestHost(callback?: string) {
     }
 }
 
+function toUser(profile: IrisSaltenProfile): IrisSaltenUser {
+    return {
+        id: profile.id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        name: `${profile.firstName} ${profile.lastName}`.trim(),
+    };
+}
+
 export default function IrisSaltenProvider(options: IrisSaltenProviderOptions) {
     const {
         name,
@@ -93,21 +103,23 @@ export default function IrisSaltenProvider(options: IrisSaltenProviderOptions) {
                     throw new Error("Missing access token");
                 }
 
-                return decodeJwt<IrisSaltenProfile>(tokens.access_token);
+                const profile = decodeJwt<IrisSaltenProfile>(tokens.access_token);
+
+                if (!profile.id) {
+                    throw new Error(
+                        `Accounts token has no "id" claim. Claims: ${Object.keys(profile).join(", ")}`,
+                    );
+                }
+
+                // NextAuth swallows errors thrown from `profile()` and redirects to
+                // /signin without an error, so anything that can fail runs here.
+                await authorize?.(toUser(profile));
+
+                return profile;
             },
         },
-        async profile(profile: IrisSaltenProfile) {
-            const user: IrisSaltenUser = {
-                id: profile.id,
-                firstName: profile.firstName,
-                lastName: profile.lastName,
-                email: profile.email,
-                name: `${profile.firstName} ${profile.lastName}`.trim(),
-            };
-
-            await authorize?.(user);
-
-            return user;
+        profile(profile: IrisSaltenProfile) {
+            return toUser(profile);
         },
     } satisfies OAuthConfig<IrisSaltenProfile>;
 }
